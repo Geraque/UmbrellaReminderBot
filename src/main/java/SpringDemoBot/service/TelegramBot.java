@@ -21,7 +21,9 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -64,7 +66,6 @@ public class TelegramBot extends TelegramLongPollingBot {
         if(update.hasMessage() && update.getMessage().hasText()){
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
-            System.out.println(chatId);
 
             switch(messageText){
                 case "/start":
@@ -73,7 +74,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     break;
                 case "Топ клатч":
                     log.info("Топ клатч");
-                    topClutch(chatId);
+                    checkWeather();
                     break;
                 case "Топ рейтинг":
                     log.info("Топ рейтинг");
@@ -179,15 +180,20 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    private void topClutch(long chatId){
+    private String checkWeather(){
         RestTemplate restTemplate = new RestTemplate();
 
         String http = restTemplate.getForObject("https://api.openweathermap.org/data/2.5/weather?lat=46.20&lon=48.02&appid=a947fd7f0a1a6759d0884765022b2146", String.class);
         http = http.replaceAll("[\\[-\\]\"]","");
         String[] arr = http.split(",");
 
-        String answer = arr[4];
-        sendMessage(chatId,answer);
+        String answer1 = arr[4];
+        StringBuilder answerb = new StringBuilder();
+        for (int i = 12; i < answer1.length(); i++) {
+            answerb.append(answer1.charAt(i));
+        }
+        String answer = String.valueOf(answerb);
+        return  answer;
     }
 
     private void topYear(long chatId,int year){
@@ -563,11 +569,18 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void SendAds(){
         var listInfo = infoRepository.findAll();
 
+        Date dateNow = new Date();
+        SimpleDateFormat formatForDateNow = new SimpleDateFormat("HH:mm");
+        System.out.println("gnida");
         for (Info i: listInfo){
-            System.out.println(i.getTelegramId());
-            System.out.println(i.getCity());
-            System.out.println(i.getId());
-            sendMessage(i.getTelegramId(),"Ты Слава Бэброу?");
+            if(formatForDateNow.format(dateNow).equals("20:51")){
+                if(checkWeather().equals("few clouds")){
+                    sendMessage(i.getTelegramId(),"Ты Слава Бэброу?");
+                }
+            }
+            else {
+                sendMessage(i.getTelegramId(),"Ты Слава Бэброу123123?");
+            }
         }
     }
 }
