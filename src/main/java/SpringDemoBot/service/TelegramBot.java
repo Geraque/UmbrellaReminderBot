@@ -187,9 +187,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         http = http.replaceAll("[\\[-\\]\"]","");
         String[] arr = http.split(",");
 
-        String answer1 = arr[4];
+        String answer1 = arr[3];
         StringBuilder answerb = new StringBuilder();
-        for (int i = 12; i < answer1.length(); i++) {
+        for (int i = 5; i < answer1.length(); i++) {
             answerb.append(answer1.charAt(i));
         }
         String answer = String.valueOf(answerb);
@@ -573,8 +573,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         SimpleDateFormat formatForDateNow = new SimpleDateFormat("HH:mm");
         System.out.println("gnida");
         for (Info i: listInfo){
-            if(formatForDateNow.format(dateNow).equals("20:51")){
-                if(checkWeather().equals("few clouds")){
+            if(formatForDateNow.format(dateNow).equals("21:27")){
+                String weather = checkWeather();
+                System.out.println(weather);
+                if(weather.equals("Clouds") || weather.equals("Snow") || weather.equals("Rain")){
                     sendMessage(i.getTelegramId(),"Ты Слава Бэброу?");
                 }
             }
