@@ -36,7 +36,7 @@ public class Info {
 
 	@Column(name = "telegramId", nullable = false)
 	public long getTelegramId() {return telegramId;}
-	public void setTelegramId(long city) {this.telegramId = telegramId;}
+	public void setTelegramId(long telegramId) {this.telegramId = telegramId;}
 
 	@Column(name = "city", nullable = false)
 	public String getCity() {return city;}

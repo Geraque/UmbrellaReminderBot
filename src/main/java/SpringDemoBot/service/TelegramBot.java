@@ -1,7 +1,12 @@
 package SpringDemoBot.service;
 
 import SpringDemoBot.config.BotConfig;
+import SpringDemoBot.model.Info;
+import SpringDemoBot.repository.InfoRepository;
 import lombok.extern.slf4j.Slf4j;
+import lombok.var;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -23,6 +28,9 @@ import java.util.List;
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
 
+
+    @Autowired
+    private InfoRepository infoRepository;
 
     final BotConfig config;
 
@@ -51,30 +59,17 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
 
+
+
         if(update.hasMessage() && update.getMessage().hasText()){
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
+            System.out.println(chatId);
 
             switch(messageText){
                 case "/start":
                     log.info("/start");
                     sendMessage(chatId,"Hi, Cheboksar!");
-                    break;
-                case "Игрок года":
-                    log.info("Игрок года");
-                    sendMessage(chatId,"Выберите год");
-                    break;
-                case "Топ по категории":
-                    log.info("Топ по категории");
-                    sendMessage(chatId,"Выберите категорию");
-                    break;
-                case "Топ со всей статой":
-                    log.info("Топ со всей статой");
-                    sendMessage(chatId,"Нажми на кнопку");
-                    break;
-                case "Вся статистика":
-                    log.info("Вся статистика");
-                    sendMessage(chatId,"Статистика, моя статистика");
                     break;
                 case "Топ клатч":
                     log.info("Топ клатч");
@@ -187,19 +182,11 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void topClutch(long chatId){
         RestTemplate restTemplate = new RestTemplate();
 
-        String http = restTemplate.getForObject("http://localhost:8080/getclutches", String.class);
+        String http = restTemplate.getForObject("https://api.openweathermap.org/data/2.5/weather?lat=46.20&lon=48.02&appid=a947fd7f0a1a6759d0884765022b2146", String.class);
         http = http.replaceAll("[\\[-\\]\"]","");
         String[] arr = http.split(",");
 
-        String answer = "Топ по клатчам: " +
-                "\nИгрок: "+arr[0]+
-                "\nВсего игр: "+arr[1]+
-                "\nОбщее количество клатчей: "+arr[7]+
-                "\n1vs1: "+arr[2]+
-                "\n1vs2: "+arr[3]+
-                "\n1vs3: "+arr[4]+
-                "\n1vs4: "+arr[5]+
-                "\n1vs5: "+arr[6];
+        String answer = arr[4];
         sendMessage(chatId,answer);
     }
 
@@ -569,6 +556,18 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
         catch (TelegramApiException e){
             log.error("Error occurred: "+e.getMessage() );
+        }
+    }
+
+    @Scheduled(cron = "0 * * * * *")
+    private void SendAds(){
+        var listInfo = infoRepository.findAll();
+
+        for (Info i: listInfo){
+            System.out.println(i.getTelegramId());
+            System.out.println(i.getCity());
+            System.out.println(i.getId());
+            sendMessage(i.getTelegramId(),"Ты Слава Бэброу?");
         }
     }
 }
