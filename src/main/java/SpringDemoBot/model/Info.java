@@ -1,5 +1,8 @@
 package SpringDemoBot.model;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -8,12 +11,15 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "info")
 public class Info {
 
 	private long id;
 	private long telegramId;
 	private String city;
+	private String time;
 
 	
 	public Info() {
@@ -34,13 +40,6 @@ public class Info {
 		this.id = id;
 	}
 
-	@Column(name = "telegramId", nullable = false)
-	public long getTelegramId() {return telegramId;}
-	public void setTelegramId(long telegramId) {this.telegramId = telegramId;}
-
-	@Column(name = "city", nullable = false)
-	public String getCity() {return city;}
-	public void setCity(String city) {this.city = city;}
 
 	@Override
 	public String toString() {
@@ -48,6 +47,7 @@ public class Info {
 				"id=" + id +
 				", telegramId=" + telegramId +
 				", city='" + city + '\'' +
+				", time='" + time + '\'' +
 				'}';
 	}
 }

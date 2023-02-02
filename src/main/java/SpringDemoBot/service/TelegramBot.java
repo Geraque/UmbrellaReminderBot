@@ -573,7 +573,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         SimpleDateFormat formatForDateNow = new SimpleDateFormat("HH:mm");
         System.out.println("gnida");
         for (Info i: listInfo){
-            if(formatForDateNow.format(dateNow).equals("21:27")){
+            if(formatForDateNow.format(dateNow).equals(i.getTime())){
                 String weather = checkWeather();
                 System.out.println(weather);
                 if(weather.equals("Clouds") || weather.equals("Snow") || weather.equals("Rain")){
