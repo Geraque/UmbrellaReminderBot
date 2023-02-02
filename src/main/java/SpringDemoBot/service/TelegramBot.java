@@ -74,7 +74,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     break;
                 case "Топ клатч":
                     log.info("Топ клатч");
-                    checkWeather();
+                    checkWeather("Astrakhan");
                     break;
                 case "Топ рейтинг":
                     log.info("Топ рейтинг");
@@ -180,10 +180,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    private String checkWeather(){
+    private String checkWeather(String city){
         RestTemplate restTemplate = new RestTemplate();
 
-        String http = restTemplate.getForObject("https://api.openweathermap.org/data/2.5/weather?lat=46.20&lon=48.02&appid=a947fd7f0a1a6759d0884765022b2146", String.class);
+        String http = restTemplate.getForObject("https://api.openweathermap.org/data/2.5/weather?q="+city+"&appid=a947fd7f0a1a6759d0884765022b2146", String.class);
         http = http.replaceAll("[\\[-\\]\"]","");
         String[] arr = http.split(",");
 
@@ -574,7 +574,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         System.out.println("gnida");
         for (Info i: listInfo){
             if(formatForDateNow.format(dateNow).equals(i.getTime())){
-                String weather = checkWeather();
+                String weather = checkWeather(i.getCity());
                 System.out.println(weather);
                 if(weather.equals("Clouds") || weather.equals("Snow") || weather.equals("Rain")){
                     sendMessage(i.getTelegramId(),"Ты Слава Бэброу?");
