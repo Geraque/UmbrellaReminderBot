@@ -52,6 +52,7 @@ public class InfoController {
 
 		info.setTelegramId(infoDetails.getTelegramId());
 		info.setCity(infoDetails.getCity());
+		info.setTime(infoDetails.getTime());
 
 
 		final Info updatedInfo = infoRepository.save(info);

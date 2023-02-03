@@ -1,13 +1,16 @@
 package SpringDemoBot.service;
 
 import SpringDemoBot.config.BotConfig;
+import SpringDemoBot.exception.ResourceNotFoundException;
 import SpringDemoBot.model.Info;
 import SpringDemoBot.repository.InfoRepository;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -37,7 +40,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     final BotConfig config;
 
-    String nuNice;
+    String check;
 
     public TelegramBot(BotConfig config){
         this.config = config;
@@ -77,18 +80,24 @@ public class TelegramBot extends TelegramLongPollingBot {
                 checkWeather("Astrakhan");
             }
             else if(messageText.equals("Регистрация")) {
-                if(update.hasMessage() && update.getMessage().hasText()){
-                    messageText = update.getMessage().getText();
-                    System.out.println(messageText+" SPESHEEEEEEEER");
-                }
-                nuNice = "Nice";
+                check = "Регистрация";
                 sendMessage(chatId,"Введите название города и время через пробел");
             }
-            else if(nuNice.equals("Nice") && update.hasMessage() && update.getMessage().hasText()){
-                System.out.println("Я пашя сникерся");
-                nuNice=null;
+            else if(messageText.equals("Изменить параметры")) {
+                check = "Изменить параметры";
+                sendMessage(chatId,"Введите название города и время через пробел");
+            }
+            else if(check.equals("Регистрация") && update.hasMessage() && update.getMessage().hasText()){
+                System.out.println("Регистрация");
+                check=null;
                 createInfo(chatId, messageText);
                 sendMessage(chatId,"Успешная регистрация, для дальнейшей работы нажмите /start");
+            }
+            else if(check.equals("Изменить параметры") && update.hasMessage() && update.getMessage().hasText()){
+                System.out.println("Изменить параметры");
+                check=null;
+                updateInfo(chatId, messageText);
+                sendMessage(chatId,"Данные успешно измененны, для дальнейшей работы нажмите /start");
             }
             else {
                 sendMessage(chatId,"Такой функции нет!");
@@ -112,13 +121,28 @@ public class TelegramBot extends TelegramLongPollingBot {
         return  answer;
     }
 
-    public Info createInfo(long chatId, String messageText) {
+    private void createInfo(long chatId, String messageText) {
         String[] arr = messageText.split(" ");
         Info info = new Info();
         info.setTelegramId(chatId);
         info.setCity(arr[0]);
         info.setTime(arr[1]);
-        return infoRepository.save(info);
+        infoRepository.save(info);
+    }
+
+    private void updateInfo(long chatId, String messageText)  {
+        List<Info> listInfo = infoRepository.findAll();
+        String[] arr = messageText.split(" ");
+        Info info = new Info(chatId,arr[0]);
+        for (Info i:listInfo) {
+            if(i.getTelegramId()==chatId){
+                info = i;
+                break;
+            }
+        }
+        info.setTime(arr[1]);
+        info.setCity(arr[0]);
+        final Info updatedInfo = infoRepository.save(info);
     }
 
 
