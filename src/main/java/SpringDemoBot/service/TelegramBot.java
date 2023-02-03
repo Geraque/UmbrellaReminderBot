@@ -8,10 +8,12 @@ import lombok.var;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
@@ -19,6 +21,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import javax.validation.Valid;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,6 +36,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     private InfoRepository infoRepository;
 
     final BotConfig config;
+
+    String nuNice;
 
     public TelegramBot(BotConfig config){
         this.config = config;
@@ -59,23 +64,34 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
 
-
-
         if(update.hasMessage() && update.getMessage().hasText()){
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
 
-            switch(messageText){
-                case "/start":
-                    log.info("/start");
-                    sendMessage(chatId,"Для ввода информации нажмите на кнопку Зарегистрироваться");
-                    break;
-                case "Проверка":
-                    log.info("Проверка");
-                    checkWeather("Astrakhan");
-                    break;
-                default:
-                    sendMessage(chatId,"Такой функции нет!");
+            if(messageText.equals("/start")){
+                log.info("/start");
+                sendMessage(chatId,"Для ввода информации нажмите на кнопку Зарегистрироваться");
+            }
+            else if(messageText.equals("Проверка")) {
+                log.info("Проверка");
+                checkWeather("Astrakhan");
+            }
+            else if(messageText.equals("Регистрация")) {
+                if(update.hasMessage() && update.getMessage().hasText()){
+                    messageText = update.getMessage().getText();
+                    System.out.println(messageText+" SPESHEEEEEEEER");
+                }
+                nuNice = "Nice";
+                sendMessage(chatId,"Введите название города и время через пробел");
+            }
+            else if(nuNice.equals("Nice") && update.hasMessage() && update.getMessage().hasText()){
+                System.out.println("Я пашя сникерся");
+                nuNice=null;
+                createInfo(chatId, messageText);
+                sendMessage(chatId,"Успешная регистрация, для дальнейшей работы нажмите /start");
+            }
+            else {
+                sendMessage(chatId,"Такой функции нет!");
             }
         }
     }
@@ -96,15 +112,24 @@ public class TelegramBot extends TelegramLongPollingBot {
         return  answer;
     }
 
+    public Info createInfo(long chatId, String messageText) {
+        String[] arr = messageText.split(" ");
+        Info info = new Info();
+        info.setTelegramId(chatId);
+        info.setCity(arr[0]);
+        info.setTime(arr[1]);
+        return infoRepository.save(info);
+    }
+
 
     private void startButton(SendMessage message){
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
 
         List<KeyboardRow> keyboardRows = new ArrayList<>();
         KeyboardRow row = new KeyboardRow();
-        row.add("Игрок года");
-        row.add("Топ по категории");
-        row.add("Вся статистика");
+        row.add("/start");
+        row.add("Регистрация");
+        row.add("Изменить параметры");
 
         keyboardRows.add(row);
 
@@ -127,7 +152,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
 
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 0 * * *")
     private void SendAds(){
         var listInfo = infoRepository.findAll();
 
