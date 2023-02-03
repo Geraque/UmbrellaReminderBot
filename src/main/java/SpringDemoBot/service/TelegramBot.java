@@ -29,6 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Component
@@ -87,7 +88,6 @@ public class TelegramBot extends TelegramLongPollingBot {
                     sendMessage(chatId,"Введите название города и время через пробел");
                     check = "Регистрация";
                 }
-
             }
             else if(messageText.equals("Изменить параметры")) {
                 if(checkUpdate(chatId)){
@@ -97,19 +97,29 @@ public class TelegramBot extends TelegramLongPollingBot {
                 else{
                     sendMessage(chatId,"Вы ещё не зарегистрировались, чтобы зарегистрировать нажмите Регистрация");
                 }
-
             }
             else if(check.equals("Регистрация") && update.hasMessage() && update.getMessage().hasText()){
                 System.out.println("Регистрация");
-                check=null;
-                createInfo(chatId, messageText);
-                sendMessage(chatId,"Успешная регистрация, для дальнейшей работы нажмите /start");
+                if (!checkTime(messageText)){
+                    sendMessage(chatId,"Введенно неправильно время, попробуйте снова");
+                }
+                else{
+                    check=null;
+                    createInfo(chatId, messageText);
+                    sendMessage(chatId,"Успешная регистрация, для дальнейшей работы нажмите /start");
+                }
+
             }
             else if(check.equals("Изменить параметры") && update.hasMessage() && update.getMessage().hasText()){
                 System.out.println("Изменить параметры");
-                check=null;
-                updateInfo(chatId, messageText);
-                sendMessage(chatId,"Данные успешно измененны, для дальнейшей работы нажмите /start");
+                if (!checkTime(messageText)){
+                    sendMessage(chatId,"Введенно неправильно время, попробуйте снова");
+                }
+                else{
+                    check=null;
+                    updateInfo(chatId, messageText);
+                    sendMessage(chatId,"Данные успешно измененны, для дальнейшей работы нажмите /start");
+                }
             }
             else {
                 sendMessage(chatId,"Такой функции нет!");
@@ -156,6 +166,12 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
         return check;
     }
+
+    private boolean checkTime(String messageText){
+        String[] arr = messageText.split(" ");
+        return Pattern.matches("([01]\\d|2[0-3])(:[0-5]\\d)",arr[1]);
+    }
+
 
     private void createInfo(long chatId, String messageText) {
         String[] arr = messageText.split(" ");
