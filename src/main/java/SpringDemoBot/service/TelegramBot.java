@@ -80,12 +80,24 @@ public class TelegramBot extends TelegramLongPollingBot {
                 checkWeather("Astrakhan");
             }
             else if(messageText.equals("Регистрация")) {
-                check = "Регистрация";
-                sendMessage(chatId,"Введите название города и время через пробел");
+                if(checkCreate(chatId)){
+                    sendMessage(chatId,"Вы уже зарегистрировались, если хотите изменить параметры нажмите Изменить параметры!");
+                }
+                else{
+                    sendMessage(chatId,"Введите название города и время через пробел");
+                    check = "Регистрация";
+                }
+
             }
             else if(messageText.equals("Изменить параметры")) {
-                check = "Изменить параметры";
-                sendMessage(chatId,"Введите название города и время через пробел");
+                if(checkUpdate(chatId)){
+                    check = "Изменить параметры";
+                    sendMessage(chatId,"Введите название города и время через пробел");
+                }
+                else{
+                    sendMessage(chatId,"Вы ещё не зарегистрировались, чтобы зарегистрировать нажмите Регистрация");
+                }
+
             }
             else if(check.equals("Регистрация") && update.hasMessage() && update.getMessage().hasText()){
                 System.out.println("Регистрация");
@@ -119,6 +131,30 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
         String answer = String.valueOf(answerb);
         return  answer;
+    }
+
+    private boolean checkCreate(long chatId){
+        List<Info> listInfo = infoRepository.findAll();
+        boolean check=false;
+        for (Info i:listInfo) {
+            if (i.getTelegramId() == chatId) {
+                check = true;
+                break;
+            }
+        }
+        return check;
+    }
+
+    private boolean checkUpdate(long chatId){
+        List<Info> listInfo = infoRepository.findAll();
+        boolean check=false;
+        for (Info i:listInfo) {
+            if (i.getTelegramId() == chatId) {
+                check = true;
+                break;
+            }
+        }
+        return check;
     }
 
     private void createInfo(long chatId, String messageText) {
